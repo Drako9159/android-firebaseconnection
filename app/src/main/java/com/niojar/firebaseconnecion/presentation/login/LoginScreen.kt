@@ -3,6 +3,7 @@ package com.niojar.firebaseconnecion.presentation.login
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,7 +26,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.FirebaseAuth
@@ -48,15 +48,18 @@ fun LoginScreen(auth: FirebaseAuth) {
         horizontalAlignment = Alignment.CenterHorizontally
 
     ) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_back),
-            contentDescription = "",
-            tint = White,
-            modifier = Modifier
-                .padding(vertical = 24.dp)
-                .size(24.dp)
+        Row {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_back),
+                contentDescription = "",
+                tint = White,
+                modifier = Modifier
+                    .padding(vertical = 24.dp)
+                    .size(24.dp)
 
-        )
+            )
+            Spacer(Modifier.weight(1f))
+        }
 
         Text("Email", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 40.sp)
         TextField(
@@ -97,49 +100,3 @@ fun LoginScreen(auth: FirebaseAuth) {
     }
 }
 
-@Preview
-@Composable
-fun LoginPreview() {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Black)
-            .padding(horizontal = 32.dp)
-
-    ) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_back),
-            contentDescription = "",
-            tint = White,
-            modifier = Modifier
-                .padding(vertical = 24.dp)
-                .size(24.dp)
-
-        )
-
-        Text("Email", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 40.sp)
-        TextField(
-            value = email,
-            onValueChange = { email = it },
-            modifier = Modifier.fillMaxWidth(),
-            colors = TextFieldDefaults.colors(
-                unfocusedContainerColor = UnselectedField,
-                focusedContainerColor = SelectedField
-            )
-        )
-        Spacer(Modifier.height(48.dp))
-
-        Text("Password", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 40.sp)
-        TextField(
-            value = password,
-            onValueChange = { password = it },
-            modifier = Modifier.fillMaxWidth(), colors = TextFieldDefaults.colors(
-                unfocusedContainerColor = UnselectedField,
-                focusedContainerColor = SelectedField
-            )
-        )
-    }
-}
