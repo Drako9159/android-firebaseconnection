@@ -35,7 +35,7 @@ import com.niojar.firebaseconnecion.ui.theme.SelectedField
 import com.niojar.firebaseconnecion.ui.theme.UnselectedField
 
 @Composable
-fun SignUpScreen(auth: FirebaseAuth){
+fun SignUpScreen(auth: FirebaseAuth) {
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -85,6 +85,10 @@ fun SignUpScreen(auth: FirebaseAuth){
 
         Spacer(Modifier.height(48.dp))
         Button(onClick = {
+            /*
+            * Register anonymously for preserve information, but not register
+            * auth.signInAnonymously()
+            *  */
             auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     // Navigate"
