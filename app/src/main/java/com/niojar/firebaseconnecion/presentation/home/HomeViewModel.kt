@@ -4,13 +4,21 @@ package com.niojar.firebaseconnecion.presentation.home
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.ktx.database
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.niojar.firebaseconnecion.presentation.model.Artist
+import com.niojar.firebaseconnecion.presentation.model.Player
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -18,12 +26,27 @@ import kotlinx.coroutines.withContext
 
 class HomeViewModel: ViewModel() {
     private var db: FirebaseFirestore = Firebase.firestore
+    private val database = Firebase.database // realtime database
+
     private val _artist = MutableStateFlow<List<Artist>>(emptyList())
     val artist: StateFlow<List<Artist>> = _artist
+
+    private val _player = MutableStateFlow<Player?>(null)
+    val player: StateFlow<Player?> = _player
 
     init {
         // loadData()
         getArtist()
+        getPlayer()
+    }
+
+    private fun getPlayer(){
+        viewModelScope.launch {
+            collectPlayer().collect{
+                val player = it.getValue(Player::class.java)
+                _player.value = player
+            }
+        }
     }
 
     fun loadData() {
@@ -55,7 +78,7 @@ class HomeViewModel: ViewModel() {
         }
     }
 
-    suspend fun getAllArtist():List<Artist>{
+    private suspend fun getAllArtist():List<Artist>{
         return try {
             db.collection("artists")
                 .get()
@@ -66,6 +89,21 @@ class HomeViewModel: ViewModel() {
             Log.i("master", e.toString())
             emptyList()
         }
+    }
+
+    private fun collectPlayer(): Flow<DataSnapshot> = callbackFlow{
+        val listener = object : ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                trySend(snapshot).isSuccess
+            }
+            override fun onCancelled(error: DatabaseError) {
+                Log.i("master", "Error: ${error.message}")
+                close(error.toException())
+            }
+        }
+        val ref = database.reference.child("player")
+        ref.addValueEventListener(listener)
+        awaitClose{ ref.removeEventListener(listener)}
     }
 }
 
