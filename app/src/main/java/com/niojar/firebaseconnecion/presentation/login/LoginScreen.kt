@@ -35,7 +35,7 @@ import com.niojar.firebaseconnecion.ui.theme.SelectedField
 import com.niojar.firebaseconnecion.ui.theme.UnselectedField
 
 @Composable
-fun LoginScreen(auth: FirebaseAuth) {
+fun LoginScreen(auth: FirebaseAuth, navigateToHome:() -> Unit) {
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -87,7 +87,7 @@ fun LoginScreen(auth: FirebaseAuth) {
         Button(onClick = {
             auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    // Navigate"
+                    navigateToHome()
                     Log.i("master", "login is ok")
                 } else {
                     // Not login
