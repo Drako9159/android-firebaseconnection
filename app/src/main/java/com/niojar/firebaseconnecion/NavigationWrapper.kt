@@ -12,8 +12,8 @@ import com.niojar.firebaseconnecion.presentation.login.LoginScreen
 import com.niojar.firebaseconnecion.presentation.signup.SignUpScreen
 
 @Composable
-fun NavigationWrapper(navHostController: NavHostController, auth: FirebaseAuth, db: FirebaseFirestore) {
-    NavHost(navController = navHostController, startDestination = "initial") {
+fun NavigationWrapper(navHostController: NavHostController, auth: FirebaseAuth) {
+    NavHost(navController = navHostController, startDestination = "home") {
         composable("initial") {
             InitialScreen(
                 navigateToLogin = {navHostController.navigate("login")},
@@ -27,7 +27,7 @@ fun NavigationWrapper(navHostController: NavHostController, auth: FirebaseAuth, 
             SignUpScreen(auth)
         }
         composable("home") {
-            HomeScreen(db)
+            HomeScreen()
         }
     }
 }

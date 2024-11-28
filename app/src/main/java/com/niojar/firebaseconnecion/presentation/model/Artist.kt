@@ -1,8 +1,8 @@
 package com.niojar.firebaseconnecion.presentation.model
 
 data class Artist(
-    val name:String,
-    val description:String,
-    val image:String,
-    val songs:List<Song>
+    val name:String? = null,
+    val description:String? = null,
+    val image:String? = null,
+    //val songs:List<Song>
 )
