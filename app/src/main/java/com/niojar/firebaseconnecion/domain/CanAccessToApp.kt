@@ -10,10 +10,11 @@ class CanAccessToApp {
         val currentVersion = repository.getCurrentVersion()
         val minAllowedVersion = repository.getMinAllowedVersion()
 
-
-        
-
+        for ((currentPart, minPart) in currentVersion.zip(minAllowedVersion)) {
+            if (currentPart != minPart) {
+                return currentPart > minPart
+            }
+        }
         return true
     }
-
 }
