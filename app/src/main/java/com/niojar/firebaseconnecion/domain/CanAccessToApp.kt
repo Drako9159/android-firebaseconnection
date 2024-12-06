@@ -6,7 +6,7 @@ class CanAccessToApp {
 
     val repository = Repository()
 
-    suspend fun invoke(): Boolean {
+    suspend operator fun invoke(): Boolean {
         val currentVersion = repository.getCurrentVersion()
         val minAllowedVersion = repository.getMinAllowedVersion()
 

@@ -11,6 +11,7 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.niojar.firebaseconnecion.domain.CanAccessToApp
 import com.niojar.firebaseconnecion.presentation.model.Artist
 import com.niojar.firebaseconnecion.presentation.model.Player
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +25,8 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 
-class HomeViewModel: ViewModel() {
+class HomeViewModel : ViewModel() {
+    private var canAccessToApp = CanAccessToApp()
     private var db: FirebaseFirestore = Firebase.firestore
     private val database = Firebase.database // realtime database
 
@@ -34,15 +36,28 @@ class HomeViewModel: ViewModel() {
     private val _player = MutableStateFlow<Player?>(null)
     val player: StateFlow<Player?> = _player
 
+    private val _blockVersion = MutableStateFlow<Boolean>(false)
+    val blockVersion = _blockVersion
+
     init {
         // loadData()
+        checkUserVersion()
         getArtist()
         getPlayer()
     }
 
-    private fun getPlayer(){
+    private fun checkUserVersion() {
         viewModelScope.launch {
-            collectPlayer().collect{
+            val result = withContext(Dispatchers.IO) {
+                canAccessToApp()
+            }
+            _blockVersion.value = !result
+        }
+    }
+
+    private fun getPlayer() {
+        viewModelScope.launch {
+            collectPlayer().collect {
                 val player = it.getValue(Player::class.java)
                 _player.value = player
             }
@@ -69,33 +84,34 @@ class HomeViewModel: ViewModel() {
     }
 
 
-    private fun getArtist(){
+    private fun getArtist() {
         viewModelScope.launch {
-            val result = withContext(Dispatchers.IO){
+            val result = withContext(Dispatchers.IO) {
                 getAllArtist()
             }
             _artist.value = result
         }
     }
 
-    private suspend fun getAllArtist():List<Artist>{
+    private suspend fun getAllArtist(): List<Artist> {
         return try {
             db.collection("artists")
                 .get()
                 .await()
                 .documents
                 .mapNotNull { snapshot -> snapshot.toObject(Artist::class.java) }
-        } catch (e:Exception) {
+        } catch (e: Exception) {
             Log.i("master", e.toString())
             emptyList()
         }
     }
 
-    private fun collectPlayer(): Flow<DataSnapshot> = callbackFlow{
-        val listener = object : ValueEventListener{
+    private fun collectPlayer(): Flow<DataSnapshot> = callbackFlow {
+        val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 trySend(snapshot).isSuccess
             }
+
             override fun onCancelled(error: DatabaseError) {
                 Log.i("master", "Error: ${error.message}")
                 close(error.toException())
@@ -103,11 +119,11 @@ class HomeViewModel: ViewModel() {
         }
         val ref = database.reference.child("player")
         ref.addValueEventListener(listener)
-        awaitClose{ ref.removeEventListener(listener)}
+        awaitClose { ref.removeEventListener(listener) }
     }
 
-    fun onPlaySelected(){
-        if(player.value != null) {
+    fun onPlaySelected() {
+        if (player.value != null) {
             val currentPlayer = _player.value?.copy(play = !player.value?.play!!)
             val ref = database.reference.child("player")
             ref.setValue(currentPlayer)
