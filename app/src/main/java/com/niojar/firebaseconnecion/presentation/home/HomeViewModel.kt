@@ -105,5 +105,25 @@ class HomeViewModel: ViewModel() {
         ref.addValueEventListener(listener)
         awaitClose{ ref.removeEventListener(listener)}
     }
+
+    fun onPlaySelected(){
+        if(player.value != null) {
+            val currentPlayer = _player.value?.copy(play = !player.value?.play!!)
+            val ref = database.reference.child("player")
+            ref.setValue(currentPlayer)
+        }
+    }
+
+    fun onCancelSelected() {
+        val ref = database.reference.child("player")
+        ref.setValue(null)
+    }
+
+    fun addPlayer(artist: Artist) {
+        val ref = database.reference.child("player")
+        val player = Player(artist = artist, play = true)
+        ref.setValue(player)
+    }
+
 }
 

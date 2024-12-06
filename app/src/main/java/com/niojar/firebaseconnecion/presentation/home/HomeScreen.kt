@@ -1,7 +1,8 @@
 package com.niojar.firebaseconnecion.presentation.home
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,11 +22,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.niojar.firebaseconnecion.R
 import com.niojar.firebaseconnecion.presentation.model.Artist
+import com.niojar.firebaseconnecion.presentation.model.Player
 import com.niojar.firebaseconnecion.ui.theme.Black
 import com.niojar.firebaseconnecion.ui.theme.Purple40
 
@@ -39,26 +43,35 @@ fun HomeScreen(viewModel: HomeViewModel = HomeViewModel()){
         Text("Popular artist", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 30.sp, modifier = Modifier.padding(16.dp))
         LazyRow {
             items(artists.value){
-                ArtistItem(it)
+                ArtistItem(artist = it, onItemSelected = { viewModel.addPlayer(it) })
             }
         }
 
         Spacer(modifier = Modifier.weight(1f))
-        if(player!=null){
-            val color = if(player?.play == true) Color.Green else Color.Red
-            Row (Modifier.height(50.dp).fillMaxSize().background(Purple40)){
-                Text(text = player?.artist?.name.orEmpty())
-                Box(Modifier.size(20.dp).background(color))
-            }
+        player?.let {
+            PlayerComponent(player = it, onCancelSelected = { viewModel.onCancelSelected() }, onPlaySelected = { viewModel.onPlaySelected() })
         }
     }
 }
 
+@Composable
+fun PlayerComponent(player:Player, onPlaySelected:() -> Unit, onCancelSelected: () -> Unit) {
+    val icon = if(player.play == true) R.drawable.ic_pause else R.drawable.ic_play
+    Row (Modifier.height(50.dp).fillMaxSize().background(Purple40),
+        verticalAlignment = Alignment.CenterVertically){
+        Text(text = player.artist?.name.orEmpty(), modifier = Modifier.padding(horizontal = 12.dp), color = Color.White)
+        Spacer(modifier = Modifier.weight(1f))
+        Image(painter = painterResource(id = icon), contentDescription = "play/pause", modifier = Modifier.size(40.dp).clickable { onPlaySelected() })
+        Image(painter = painterResource(id = R.drawable.ic_close), contentDescription = "Close", modifier = Modifier.size(40.dp).clickable { onCancelSelected() })
+
+    // Box(Modifier.size(20.dp).background(color).clickable { viewModel.onPlaySelected() })
+    }
+}
 
 
 @Composable
-fun ArtistItem(artist: Artist){
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+fun ArtistItem(artist: Artist, onItemSelected:(Artist) -> Unit){
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable { onItemSelected(artist) }) {
         //Box(Modifier.size(60.dp).background(Color.Red))
         AsyncImage(modifier = Modifier.size(60.dp).clip(CircleShape), model = artist.image, contentDescription = "Artist image")
         Spacer(modifier = Modifier.height(4.dp))
